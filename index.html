@@ -34,13 +34,15 @@
     method: "GET"
   })
   .then(res => res.text())
-  .then(text => document.getElementById("result").innerText = text)
+  .then(text => {
+    console.log("Response:", text); // Optional debug
+    document.getElementById("result").innerText = text;
+  })
   .catch(err => {
     console.error(err);
     document.getElementById("result").innerText = "Something went wrong.";
   });
 }
-
 
     function startScanner() {
       document.getElementById("scanner").style.display = "block";
