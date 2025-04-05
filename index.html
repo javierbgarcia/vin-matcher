@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VIN Matcher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; padding: 20px; text-align: center; }
+    input, button { padding: 10px; margin: 10px; font-size: 1.1em; }
+    video { width: 100%; max-width: 400px; margin-top: 20px; }
+    #result { font-weight: bold; margin-top: 20px; font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <h2>VIN Matcher</h2>
+
+  <input type="text" id="vinInput" placeholder="Enter VIN manually" />
+  <br>
+  <button onclick="submitVIN()">Submit VIN</button>
+  <button onclick="startScanner()">📷 Scan Barcode</button>
+
+  <video id="scanner" style="display: none;"></video>
+
+  <div id="result"></div>
+
+  <script src="https://serratus.github.io/quaggaJS/dist/quagga.min.js"></script>
+  <script>
+    const endpoint = "https://script.google.com/macros/s/AKfycbywb7m8bMb-Gy4jDIN2-CQO98cOxGoANg_L2rwKBRD1dTkgPr7qB7BXxaVJY3uE4ff3rQ/exec";
+
+    function submitVIN(vinValue = null) {
+      const vin = vinValue || document.getElementById('vinInput').value.trim();
+      if (!vin) return alert("Please enter or scan a VIN");
+
+      fetch(endpoint, {
+        method: "POST",
+        body: new URLSearchParams({ vin })
+      })
+      .then(res => res.text())
+      .then(text => document.getElementById("result").innerText = text)
+      .catch(err => {
+        console.error(err);
+        document.getElementById("result").innerText = "Something went wrong.";
+      });
+    }
+
+    function startScanner() {
+      document.getElementById("scanner").style.display = "block";
+
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: document.querySelector('#scanner'),
+          constraints: {
+            facingMode: "environment"
+          },
+        },
+        decoder: {
+          readers: ["code_128_reader", "code_39_reader", "ean_reader"]
+        }
+      }, function(err) {
+        if (err) {
+          console.error(err);
+          alert("Error starting barcode scanner");
+          return;
+        }
+        Quagga.start();
+      });
+
+      Quagga.onDetected(data => {
+        const code = data.codeResult.code;
+        Quagga.stop();
+        document.getElementById("scanner").style.display = "none";
+        document.getElementById("vinInput").value = code;
+        submitVIN(code);
+      });
+    }
+  </script>
+</body>
+</html>
