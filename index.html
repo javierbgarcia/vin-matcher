@@ -35,26 +35,24 @@
     const endpoint = "https://script.google.com/macros/s/AKfycbz2D7pXPM57irO6SX_pe8mx-q8Rhlh42XHozHsd22tDFDllbGFJ-7eHr_BgBE2XQK6-sQ/exec";
 
     function checkPIN() {
-      const pin = document.getElementById("pinInput").value;
-      fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "pin=" + encodeURIComponent(pin)
-      })
-      .then(res => res.text())
-      .then(response => {
-        if (response === "OK") {
-          document.getElementById("auth").style.display = "none";
-          document.getElementById("mainApp").style.display = "block";
-        } else {
-          document.getElementById("authMsg").innerText = "❌ Incorrect PIN";
-        }
-      })
-      .catch(err => {
-        document.getElementById("authMsg").innerText = "Error checking PIN.";
-        console.error("PIN check failed:", err);
-      });
-    }
+  const pin = document.getElementById("pinInput").value;
+
+  fetch(`${endpoint}?pin=${encodeURIComponent(pin)}`)
+    .then(res => res.text())
+    .then(response => {
+      if (response === "OK") {
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("mainApp").style.display = "block";
+      } else {
+        document.getElementById("authMsg").innerText = "❌ Incorrect PIN";
+      }
+    })
+    .catch(err => {
+      document.getElementById("authMsg").innerText = "Error checking PIN.";
+      console.error("PIN check failed:", err);
+    });
+}
+
 
     function submitVIN(vinValue = null) {
       const vin = vinValue || document.getElementById('vinInput').value.trim();
