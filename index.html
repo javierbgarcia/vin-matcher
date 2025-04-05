@@ -6,9 +6,10 @@
   <style>
     body { font-family: sans-serif; padding: 20px; text-align: center; }
     input, button { padding: 10px; margin: 10px; font-size: 1.1em; }
-    video { width: 100%; max-width: 400px; margin-top: 20px; }
     #result { font-weight: bold; margin-top: 20px; font-size: 1.2em; }
+    #reader { width: 100%; max-width: 400px; margin: auto; display: none; }
   </style>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
   <h2>VIN Matcher</h2>
@@ -18,12 +19,8 @@
   <button onclick="submitVIN()">Submit VIN</button>
   <button onclick="startScanner()">📷 Scan Barcode</button>
 
-  <video id="scanner" style="display: none;"></video>
-
+  <div id="reader"></div>
   <div id="result"></div>
-
-  <!-- Load QuaggaJS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
   <script>
     const endpoint = "https://script.google.com/macros/s/AKfycbwpTT-5nlwUaYah6A6GTkmR08Vxt3K3hZ_NtG6mC9QozNjbyc1Ilhy7jEsar_9VMUQt/exec";
@@ -37,7 +34,6 @@
       })
       .then(res => res.text())
       .then(text => {
-        console.log("Response:", text);
         document.getElementById("result").innerText = text;
       })
       .catch(err => {
@@ -47,38 +43,30 @@
     }
 
     function startScanner() {
-      const videoElement = document.getElementById("scanner");
-      videoElement.style.display = "block";
+      const reader = document.getElementById("reader");
+      reader.style.display = "block";
 
-      Quagga.init({
-        inputStream: {
-          name: "Live",
-          type: "LiveStream",
-          target: videoElement,
-          constraints: {
-            facingMode: "environment"
-          },
+      const html5QrCode = new Html5Qrcode("reader");
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: 250
         },
-        decoder: {
-          readers: ["code_128_reader", "code_39_reader", "ean_reader"]
+        (decodedText, decodedResult) => {
+          html5QrCode.stop().then(() => {
+            reader.style.display = "none";
+            document.getElementById("vinInput").value = decodedText;
+            submitVIN(decodedText);
+          });
         },
-        locate: true
-      }, function(err) {
-        if (err) {
-          console.error("Quagga init error:", err);
-          alert("Failed to start scanner: " + err.message);
-          return;
+        (errorMessage) => {
+          // Optional: console.log("Scan error:", errorMessage);
         }
-        Quagga.start();
-      });
-
-      Quagga.onDetected(result => {
-        const code = result.codeResult.code;
-        console.log("Barcode detected:", code);
-        Quagga.stop();
-        videoElement.style.display = "none";
-        document.getElementById("vinInput").value = code;
-        submitVIN(code);
+      ).catch(err => {
+        document.getElementById("result").innerText = "Unable to start scanner: " + err;
+        console.error(err);
       });
     }
   </script>
