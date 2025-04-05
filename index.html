@@ -22,63 +22,65 @@
 
   <div id="result"></div>
 
-  <script src="https://serratus.github.io/quaggaJS/dist/quagga.min.js"></script>
+  <!-- Load QuaggaJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
   <script>
     const endpoint = "https://script.google.com/macros/s/AKfycbwpTT-5nlwUaYah6A6GTkmR08Vxt3K3hZ_NtG6mC9QozNjbyc1Ilhy7jEsar_9VMUQt/exec";
 
     function submitVIN(vinValue = null) {
-  const vin = vinValue || document.getElementById('vinInput').value.trim();
-  if (!vin) return alert("Please enter or scan a VIN");
+      const vin = vinValue || document.getElementById('vinInput').value.trim();
+      if (!vin) return alert("Please enter or scan a VIN");
 
-  fetch(`${endpoint}?vin=${encodeURIComponent(vin)}`, {
-    method: "GET"
-  })
-  .then(res => res.text())
-  .then(text => {
-    console.log("Response:", text); // Optional debug
-    document.getElementById("result").innerText = text;
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("result").innerText = "Something went wrong.";
-  });
-}
+      fetch(`${endpoint}?vin=${encodeURIComponent(vin)}`, {
+        method: "GET"
+      })
+      .then(res => res.text())
+      .then(text => {
+        console.log("Response:", text);
+        document.getElementById("result").innerText = text;
+      })
+      .catch(err => {
+        console.error("Fetch error:", err);
+        document.getElementById("result").innerText = "Something went wrong.";
+      });
+    }
 
     function startScanner() {
-  const videoElement = document.getElementById("scanner");
-  videoElement.style.display = "block";
+      const videoElement = document.getElementById("scanner");
+      videoElement.style.display = "block";
 
-  Quagga.init({
-    inputStream: {
-      name: "Live",
-      type: "LiveStream",
-      target: videoElement,
-      constraints: {
-        facingMode: "environment", // Use back camera on mobile
-      },
-    },
-    decoder: {
-      readers: ["code_128_reader", "code_39_reader", "ean_reader"]
-    },
-    locate: true
-  }, function(err) {
-    if (err) {
-      console.error("Quagga init error:", err);
-      alert("Failed to start scanner: " + err.message);
-      return;
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: videoElement,
+          constraints: {
+            facingMode: "environment"
+          },
+        },
+        decoder: {
+          readers: ["code_128_reader", "code_39_reader", "ean_reader"]
+        },
+        locate: true
+      }, function(err) {
+        if (err) {
+          console.error("Quagga init error:", err);
+          alert("Failed to start scanner: " + err.message);
+          return;
+        }
+        Quagga.start();
+      });
+
+      Quagga.onDetected(result => {
+        const code = result.codeResult.code;
+        console.log("Barcode detected:", code);
+        Quagga.stop();
+        videoElement.style.display = "none";
+        document.getElementById("vinInput").value = code;
+        submitVIN(code);
+      });
     }
-    Quagga.start();
-  });
-
-  Quagga.onDetected(data => {
-    const code = data.codeResult.code;
-    Quagga.stop();
-    videoElement.style.display = "none";
-    document.getElementById("vinInput").value = code;
-    submitVIN(code);
-  });
-}
-
   </script>
 </body>
 </html>
