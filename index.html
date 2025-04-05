@@ -45,37 +45,40 @@
 }
 
     function startScanner() {
-      document.getElementById("scanner").style.display = "block";
+  const videoElement = document.getElementById("scanner");
+  videoElement.style.display = "block";
 
-      Quagga.init({
-        inputStream: {
-          name: "Live",
-          type: "LiveStream",
-          target: document.querySelector('#scanner'),
-          constraints: {
-            facingMode: "environment"
-          },
-        },
-        decoder: {
-          readers: ["code_128_reader", "code_39_reader", "ean_reader"]
-        }
-      }, function(err) {
-        if (err) {
-          console.error(err);
-          alert("Error starting barcode scanner");
-          return;
-        }
-        Quagga.start();
-      });
-
-      Quagga.onDetected(data => {
-        const code = data.codeResult.code;
-        Quagga.stop();
-        document.getElementById("scanner").style.display = "none";
-        document.getElementById("vinInput").value = code;
-        submitVIN(code);
-      });
+  Quagga.init({
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      target: videoElement,
+      constraints: {
+        facingMode: "environment", // Use back camera on mobile
+      },
+    },
+    decoder: {
+      readers: ["code_128_reader", "code_39_reader", "ean_reader"]
+    },
+    locate: true
+  }, function(err) {
+    if (err) {
+      console.error("Quagga init error:", err);
+      alert("Failed to start scanner: " + err.message);
+      return;
     }
+    Quagga.start();
+  });
+
+  Quagga.onDetected(data => {
+    const code = data.codeResult.code;
+    Quagga.stop();
+    videoElement.style.display = "none";
+    document.getElementById("vinInput").value = code;
+    submitVIN(code);
+  });
+}
+
   </script>
 </body>
 </html>
