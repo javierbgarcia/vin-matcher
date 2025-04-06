@@ -138,7 +138,10 @@
 
 
     function submitVIN(vinValue = null) {
-  const vin = vinValue || document.getElementById("vinInput").value.trim();
+  const vinInput = document.getElementById('vinInput');
+  const resultBox = document.getElementById('result');
+  const vin = vinValue || vinInput.value.trim();
+
   if (!vin) return alert("Please enter or scan a VIN");
 
   if (!currentDriverPIN) {
@@ -150,13 +153,23 @@
   })
     .then(res => res.text())
     .then(text => {
-      document.getElementById("result").innerText = text;
+      resultBox.innerText = `${text} \n(VIN: ${vin})`;
+      vinInput.value = ""; // ✅ Clear the input field
+
+      // ✅ Automatically clear the message after 4 seconds
+      setTimeout(() => {
+        resultBox.innerText = "";
+      }, 4000);
     })
     .catch(err => {
       console.error("VIN submit error:", err);
-      document.getElementById("result").innerText = "Something went wrong.";
+      resultBox.innerText = "Something went wrong.";
+      setTimeout(() => {
+        resultBox.innerText = "";
+      }, 4000);
     });
 }
+
 
 
     function startScanner() {
@@ -182,6 +195,12 @@
         console.error(err);
       });
     }
+    document.getElementById("vinInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      submitVIN();
+      }
+  });
+      
   </script>
 
 </body>
