@@ -95,6 +95,6 @@ All data is saved directly into a Google Sheet — no backend servers required.
 
 ## 👨‍💻 Created by
 
-Built by [Javier García](https://github.com/javierbgarcia) for internal use at Withofs Bulk Logistics and similar operations where fast, lightweight, and secure VIN tracking is needed.
+Built by [Javier García](https://github.com/javierbgarcia) for internal use at Macotruck and similar operations where fast and lightweight VIN tracking is needed.
 
 ---
