@@ -109,6 +109,7 @@
 
     <div id="reader"></div>
     <div id="result"></div>
+    <div id="lastVin" style="margin-top: 10px; font-weight: 500;"></div>
   </div>
 
   <script>
@@ -140,6 +141,7 @@
     function submitVIN(vinValue = null) {
   const vinInput = document.getElementById('vinInput');
   const resultBox = document.getElementById('result');
+  const lastVinBox = document.getElementById('lastVin');
   const vin = vinValue || vinInput.value.trim();
 
   if (!vin) return alert("Please enter or scan a VIN");
@@ -153,22 +155,36 @@
   })
     .then(res => res.text())
     .then(text => {
-      resultBox.innerText = `${text} \n(VIN: ${vin})`;
-      vinInput.value = ""; // ✅ Clear the input field
+      // Temporary success/fail message
+      resultBox.innerText = `${text}`;
+      vinInput.value = ""; // Clear field
 
-      // ✅ Automatically clear the message after 4 seconds
+      // Persistent record at bottom
+      if (text.startsWith("✅")) {
+        lastVinBox.innerText = `Last VIN submitted: ${vin}`;
+        lastVinBox.style.color = "green";
+      } else {
+        lastVinBox.innerText = `Last VIN failed: ${vin}`;
+        lastVinBox.style.color = "red";
+      }
+
+      // Disappear temporary result after 7 seconds
       setTimeout(() => {
         resultBox.innerText = "";
-      }, 4000);
+      }, 7000);
     })
     .catch(err => {
       console.error("VIN submit error:", err);
       resultBox.innerText = "Something went wrong.";
+      lastVinBox.innerText = `Last VIN failed: ${vin}`;
+      lastVinBox.style.color = "red";
+
       setTimeout(() => {
         resultBox.innerText = "";
-      }, 4000);
+      }, 7000);
     });
 }
+
 
 
 
