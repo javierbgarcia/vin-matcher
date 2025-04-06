@@ -171,18 +171,20 @@
       // Disappear temporary result after 7 seconds
       setTimeout(() => {
         resultBox.innerText = "";
-      }, 7000);
+      }, 5000);
     })
     .catch(err => {
-      console.error("VIN submit error:", err);
-      resultBox.innerText = "Something went wrong.";
-      lastVinBox.innerText = `Last VIN failed: ${vin}`;
-      lastVinBox.style.color = "red";
+  console.error("VIN submit error:", err);
+  resultBox.innerText = "Something went wrong.";
+  resultBox.style.color = "red"; // ✅ red here too
+  lastVinBox.innerText = `Last VIN failed: ${vin}`;
+  lastVinBox.style.color = "red";
 
-      setTimeout(() => {
-        resultBox.innerText = "";
-      }, 7000);
-    });
+  setTimeout(() => {
+    resultBox.innerText = "";
+  }, 7000);
+});
+
 }
 
 
